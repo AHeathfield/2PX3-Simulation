@@ -34,7 +34,7 @@ class Intersection:
 
             # Connectors for roundabout
             self.sim.create_segment((radius - offset, lane_space + island_width/2 + 1*offset), (radius - offset, -lane_space - island_width/2 - 1*offset))
-            self.sim.create_segment((lane_space + island_width/2 + offset, -radius), (-lane_space - island_width/2 - offset, -radius))
+            self.sim.create_segment((lane_space + island_width/2 + offset, -radius + offset), (-lane_space - island_width/2 - offset, -radius + offset))
             self.sim.create_segment((-radius, -lane_space - island_width/2 - offset), (-radius, lane_space + island_width/2 + offset))
             self.sim.create_segment((-lane_space - island_width/2 - offset, radius), (lane_space + island_width/2 + offset, radius))
             
