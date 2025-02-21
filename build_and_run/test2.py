@@ -30,7 +30,7 @@ class Intersection:
             # Corners of Roundabout 8-11, 32-35
             self.sim.create_quadratic_bezier_curve((lane_space + island_width/2, radius - offset), (radius - 0.93*offset, radius - 0.93*offset), (radius - 1*offset, lane_space + island_width/2))
             self.sim.create_quadratic_bezier_curve((radius - offset, -lane_space - island_width/2 + 0*offset), (radius - 0.93*offset, -radius + 0.93*offset), (lane_space + island_width/2 + 0*offset, -radius + offset))
-            self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2 - offset, -radius), (-radius, -radius), (-radius, -lane_space - island_width/2 - offset))
+            self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2 + 0*offset, -radius + offset), (-radius + 0.93*offset, -radius + 0.93*offset), (-radius + offset, -lane_space - island_width/2 + 0*offset))
             self.sim.create_quadratic_bezier_curve((-radius, lane_space + island_width/2 + offset), (-radius, radius), (-lane_space - island_width/2 - offset, radius))
 
             # Connectors for roundabout 12-15, 36-39
