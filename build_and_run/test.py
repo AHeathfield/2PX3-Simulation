@@ -155,6 +155,12 @@ class Intersection:
         # })
 
         # My new simulations
+        # Entrances 0-3, 24-27
+        # Exits 4-7, 28-31
+        # Outer Ring Corners 8-11, 32-35
+        # Outer Ring Connectors 12-15, 36-39
+        # Turn into corners 16-19, 40-43
+        # Turn into exits 20-23, 44-47
         self.outerRingVehicles = VehicleGenerator({
             'vehicles': [
                 # Bottom Right Lane -> Right Right Lane
@@ -176,11 +182,16 @@ class Intersection:
             ],
             'vehicle_rate': 30
         })
-
-        # self.sim.define_interfearing_paths([0, 16], [15, 8], turn=True)
-        # self.sim.define_interfearing_paths([1, 17], [12, 9], turn=True)
-        # self.sim.define_interfearing_paths([2, 18], [13, 10], turn=True)
-        # self.sim.define_interfearing_paths([3, 19], [14, 11], turn=True)
+        # Entrances 0-3, 24-27
+        # Exits 4-7, 28-31
+        # Outer Ring Corners 8-11, 32-35
+        # Outer Ring Connectors 12-15, 36-39
+        # Turn into corners 16-19, 40-43
+        # Turn into exits 20-23, 44-47
+        self.sim.define_interfearing_paths([0, 16], [15, 8], turn=True)
+        self.sim.define_interfearing_paths([1, 17], [12, 9], turn=True)
+        self.sim.define_interfearing_paths([2, 18], [13, 10], turn=True)
+        self.sim.define_interfearing_paths([3, 19], [14, 11], turn=True)
         self.sim.add_vehicle_generator(self.outerRingVehicles)
 
     def get_sim(self):

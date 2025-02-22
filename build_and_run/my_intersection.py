@@ -128,6 +128,7 @@ class Intersection:
         }
         
         )
+        # Entrance -> turning into corners, connector -> roundabout corner
         self.sim.define_interfearing_paths([0,16],[15,8],turn=True)
         self.sim.define_interfearing_paths([1,17],[12,9],turn=True)
         self.sim.define_interfearing_paths([2,18],[13,10],turn=True)
