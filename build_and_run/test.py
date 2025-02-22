@@ -1,78 +1,187 @@
 from trafficSimulator import *
 import numpy as np
 
-
 class Intersection:
     def __init__(self):
         self.sim = Simulation()
         lane_space = 3.5
-        num_lanes = 2  # Adding two lanes
+        num_lanes = 2
         intersection_size = 49
-        island_width = 4  # Increased to accommodate two lanes
+        island_width = 4
         length = 43.75
-        radius = 22  # Increased radius for two lanes
-
+        radius = 18 
         self.v = 8.5
 
-        # Creating two lanes for each entrance and exit
-        for i in range(num_lanes):
-            offset = i * lane_space
-            # Entrance lanes
-            self.sim.create_segment((offset + lane_space/2 + island_width/2, length + intersection_size/2), (offset + lane_space/2 + island_width/2, intersection_size/2))
-            self.sim.create_segment((length + intersection_size/2, -offset - lane_space/2 - island_width/2), (intersection_size/2, -offset - lane_space/2 - island_width/2))
-            self.sim.create_segment((-offset - lane_space/2 - island_width/2, -length - intersection_size/2), (-offset - lane_space/2 - island_width/2, - intersection_size/2))
-            self.sim.create_segment((-length - intersection_size/2, offset + lane_space/2 + island_width/2), (-intersection_size/2, offset + lane_space/2 + island_width/2))
-            # Exit lanes
-            self.sim.create_segment((-offset - lane_space/2 - island_width/2, intersection_size/2), (-offset - lane_space/2 - island_width/2, length + intersection_size/2))
-            self.sim.create_segment((intersection_size/2, offset + lane_space/2 + island_width/2), (length + intersection_size/2, offset + lane_space/2 + island_width/2))
-            self.sim.create_segment((offset + lane_space/2 + island_width/2, -intersection_size/2), (offset + lane_space/2 + island_width/2, -length - intersection_size/2))
-            self.sim.create_segment((-intersection_size/2, -offset - lane_space/2 - island_width/2), (-length - intersection_size/2, -offset - lane_space/2 - island_width/2))
+        offset = lane_space
+        adj = 0.45   # This is a number to adjust the offset
         
-         #corners 8-11
-        self.sim.create_quadratic_bezier_curve((lane_space + island_width/2, radius),(radius,radius),(radius,lane_space + island_width/2))
-        self.sim.create_quadratic_bezier_curve((radius,-lane_space - island_width/2),(radius,-radius),(lane_space + island_width/2,-radius))
-        self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2,-radius),(-radius,-radius),(-radius,-lane_space - island_width/2))
-        self.sim.create_quadratic_bezier_curve((-radius,lane_space + island_width/2),(-radius,radius),(-lane_space - island_width/2, radius))
-        #connectors 12-15
-        self.sim.create_segment((radius,lane_space + island_width/2),(radius,-lane_space - island_width/2))
-        self.sim.create_segment((lane_space + island_width/2,-radius),(-lane_space - island_width/2,-radius))
-        self.sim.create_segment((-radius,-lane_space - island_width/2),(-radius,lane_space + island_width/2))
-        self.sim.create_segment((-lane_space - island_width/2, radius),(lane_space + island_width/2, radius))
-        #turn into corners 16-19
-        self.sim.create_quadratic_bezier_curve((lane_space/2 + island_width/2, intersection_size/2),(lane_space/2 + island_width/2, radius),(lane_space + island_width/2, radius))
-        self.sim.create_quadratic_bezier_curve((intersection_size/2, -lane_space/2 - island_width/2),(radius, -lane_space/2 - island_width/2),(radius,-lane_space - island_width/2))
-        self.sim.create_quadratic_bezier_curve((-lane_space/2 - island_width/2, - intersection_size/2),(-lane_space/2 - island_width/2, -radius),(-lane_space - island_width/2,-radius))
-        self.sim.create_quadratic_bezier_curve((-intersection_size/2, lane_space/2 + island_width/2),(-radius,lane_space/2 + island_width/2),(-radius,lane_space + island_width/2))
-        #turn to exit 20-23
-        self.sim.create_quadratic_bezier_curve((radius,lane_space + island_width/2),(radius,lane_space/2 + island_width/2),(intersection_size/2, lane_space/2 + island_width/2))
-        self.sim.create_quadratic_bezier_curve((lane_space + island_width/2,-radius),(lane_space/2 + island_width/2,-radius),(lane_space/2 + island_width/2, -intersection_size/2))
-        self.sim.create_quadratic_bezier_curve((-radius,-lane_space - island_width/2),(-radius,-lane_space/2 - island_width/2),(-intersection_size/2, -lane_space/2 - island_width/2))
-        self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2, radius),(-lane_space/2 - island_width/2,radius),(-lane_space/2 - island_width/2, intersection_size/2))
-    
+        
+        # My new "cleaner" code
+        # ==================== Right Lanes =====================
+        # Entrances 0-3, 24-27
+        entranceStartX = offset + lane_space/2 + island_width/2
+        entranceStartY = length + intersection_size/2
+        entranceEndX = offset + lane_space/2 + island_width/2
+        entranceEndY = intersection_size/2
+        self.sim.create_segment((entranceStartX, entranceStartY), (entranceEndX, entranceEndY))
+        self.sim.create_segment((entranceStartY, -entranceStartX), (entranceEndY, -entranceEndX))
+        self.sim.create_segment((-entranceStartX, -entranceStartY), (-entranceEndX, -entranceEndY))
+        self.sim.create_segment((-entranceStartY, entranceStartX), (-entranceEndY, entranceEndX))
 
-        # Roundabout lanes
+        # Exits 4-7, 28-31
+        self.sim.create_segment((-entranceEndX, entranceEndY), (-entranceStartX, entranceStartY))
+        self.sim.create_segment((entranceEndY, entranceEndX), (entranceStartY, entranceStartX))
+        self.sim.create_segment((entranceEndX, -entranceEndY), (entranceStartX, -entranceStartY))
+        self.sim.create_segment((-entranceEndY, -entranceEndX), (-entranceStartY, -entranceStartX))
+
+        # Outer Ring Corners 8-11
+        cornerStartX = lane_space + island_width/2 + 1.25*offset
+        cornerStartY = radius
+        cornerEndX = cornerStartY
+        cornerEndY = cornerStartX
+        self.sim.create_quadratic_bezier_curve((cornerStartX, cornerStartY), (radius, radius), (cornerEndX, cornerEndY))
+        self.sim.create_quadratic_bezier_curve((cornerStartY, -cornerStartX), (radius, -radius), (cornerEndY, -cornerEndX))
+        self.sim.create_quadratic_bezier_curve((-cornerStartX, -cornerStartY), (-radius, -radius), (-cornerEndX, -cornerEndY))
+        self.sim.create_quadratic_bezier_curve((-cornerStartY, cornerStartX), (-radius, radius), (-cornerEndY, cornerEndX))
+
+        # Outer Ring Connectors 12-15
+        connectorStartX = radius
+        connectorStartY = lane_space + island_width/2 + 1.2*offset
+        connectorEndX = connectorStartX
+        connectorEndY = connectorStartY
+        self.sim.create_segment((connectorStartX, connectorStartY), (connectorEndX, -connectorEndY))
+        self.sim.create_segment((connectorStartY, -connectorStartX), (-connectorEndY, -connectorEndX))
+        self.sim.create_segment((-connectorStartX, -connectorStartY), (-connectorEndX, connectorEndY))
+        self.sim.create_segment((-connectorStartY, connectorStartX), (connectorEndY, connectorEndX))
+
+        # Turn into corners 16-19
+        turnIntoRadius = 7.3
+        turnStartX = lane_space/2 + island_width/2 + offset
+        turnStartY = intersection_size/2
+        turnEndX = lane_space + island_width/2 + offset + 1
+        turnEndY = radius
+        self.sim.create_quadratic_bezier_curve((turnStartX, turnStartY), (turnIntoRadius, radius), (turnEndX, turnEndY))
+        self.sim.create_quadratic_bezier_curve((turnStartY, -turnStartX), (radius, -turnIntoRadius), (turnEndY, -turnEndX))
+        self.sim.create_quadratic_bezier_curve((-turnStartX, -turnStartY), (-turnIntoRadius, -radius), (-turnEndX, -turnEndY))
+        self.sim.create_quadratic_bezier_curve((-turnStartY, turnStartX), (-radius, turnIntoRadius), (-turnEndY, turnEndX))
+
+        # Turn into exits 20-23  
+        self.sim.create_quadratic_bezier_curve((turnEndY, turnEndX), (radius, turnIntoRadius), (turnStartY, turnStartX))
+        self.sim.create_quadratic_bezier_curve((turnEndX, -turnEndY), (turnIntoRadius, -radius), (turnStartX, -turnStartY))
+        self.sim.create_quadratic_bezier_curve((-turnEndY, -turnEndX), (-radius, -turnIntoRadius), (-turnStartY, -turnStartX))
+        self.sim.create_quadratic_bezier_curve((-turnEndX, turnEndY), (-turnIntoRadius, radius), (-turnStartX, turnStartY))
+
+
+        # The general order it bottom, right, top, left
         # for i in range(num_lanes):
         #     offset = i * lane_space
-        #     self.sim.create_quadratic_bezier_curve((lane_space + island_width/2 + offset, radius), (radius, radius), (radius, lane_space + island_width/2 + offset))
-        #     self.sim.create_quadratic_bezier_curve((radius, -lane_space - island_width/2 - offset), (radius, -radius), (lane_space + island_width/2 + offset, -radius))
-        #     self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2 - offset, -radius), (-radius, -radius), (-radius, -lane_space - island_width/2 - offset))
-        #     self.sim.create_quadratic_bezier_curve((-radius, lane_space + island_width/2 + offset), (-radius, radius), (-lane_space - island_width/2 - offset, radius))
+        #     # Entrances 0-3, 24-27
+        #     self.sim.create_segment((offset + lane_space/2 + island_width/2, length + intersection_size/2), (offset + lane_space/2 + island_width/2, intersection_size/2))
+        #     self.sim.create_segment((length + intersection_size/2, -offset - lane_space/2 - island_width/2), (intersection_size/2, -offset - lane_space/2 - island_width/2))
+        #     self.sim.create_segment((-offset - lane_space/2 - island_width/2, -length - intersection_size/2), (-offset - lane_space/2 - island_width/2, - intersection_size/2))
+        #     self.sim.create_segment((-length - intersection_size/2, offset + lane_space/2 + island_width/2), (-intersection_size/2, offset + lane_space/2 + island_width/2))
+
+        #     # Exits 4-7, 28-31
+        #     self.sim.create_segment((-offset - lane_space/2 - island_width/2, intersection_size/2), (-offset - lane_space/2 - island_width/2, length + intersection_size/2))
+        #     self.sim.create_segment((intersection_size/2, offset + lane_space/2 + island_width/2), (length + intersection_size/2, offset + lane_space/2 + island_width/2))
+        #     self.sim.create_segment((offset + lane_space/2 + island_width/2, -intersection_size/2), (offset + lane_space/2 + island_width/2, -length - intersection_size/2))
+        #     self.sim.create_segment((-intersection_size/2, -offset - lane_space/2 - island_width/2), (-length - intersection_size/2, -offset - lane_space/2 - island_width/2))
+
+        #     # Corners of Roundabout 8-11, 32-35
+        #     if (i == 0):
+        #         self.sim.create_quadratic_bezier_curve((1.95*lane_space + island_width/2, radius), (radius - 0.51*lane_space, radius - 0.51*lane_space), (radius - 1*offset, 1.95*lane_space + island_width/2))
+        #         self.sim.create_quadratic_bezier_curve((radius - offset, -lane_space - island_width/2 + 0*offset), (radius - 0.93*offset, -radius + 0.93*offset), (1.95*lane_space + island_width/2, -radius + offset))
+        #         self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2 + 0*offset, -radius + offset), (-radius + 0.93*offset, -radius + 0.93*offset), (-radius + offset, -lane_space - island_width/2 + 0*offset))
+        #         self.sim.create_quadratic_bezier_curve((-radius, lane_space + island_width/2 + offset), (-radius, radius), (-lane_space - island_width/2 - offset, radius))
+
+        #     else:
+        #         self.sim.create_quadratic_bezier_curve((0.90*lane_space + island_width/2, radius - offset), (radius - 0.93*offset, radius - 0.93*offset), (radius - 1*offset, lane_space + island_width/2))
+        #         self.sim.create_quadratic_bezier_curve((radius - offset, -lane_space - island_width/2 + 0*offset), (radius - 0.93*offset, -radius + 0.93*offset), (lane_space + island_width/2 + 0*offset, -radius + offset))
+        #         self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2 + 0*offset, -radius + offset), (-radius + 0.93*offset, -radius + 0.93*offset), (-radius + offset, -lane_space - island_width/2 + 0*offset))
+        #         self.sim.create_quadratic_bezier_curve((-radius, lane_space + island_width/2 + offset), (-radius, radius), (-lane_space - island_width/2 - offset, radius))
+
+        #     # Connectors for roundabout 12-15, 36-39
+        #     if (i == 0):
+        #         self.sim.create_segment((radius - offset, lane_space + island_width/2 + lane_space), (radius - offset, -lane_space - island_width/2 - 1*offset))
+        #         self.sim.create_segment((lane_space + island_width/2 + offset, -radius + offset), (-lane_space - island_width/2 - offset, -radius + offset))
+        #         self.sim.create_segment((-radius, -lane_space - island_width/2 - offset), (-radius, lane_space + island_width/2 + offset))
+        #         self.sim.create_segment((-lane_space - island_width/2 - offset, radius), (lane_space + island_width/2 + offset, radius))
+        #     else:
+        #         self.sim.create_segment((radius - offset, lane_space + island_width/2 + 0.1*offset), (radius - offset, -lane_space - island_width/2 - 0*offset))
+        #         self.sim.create_segment((lane_space + island_width/2 + offset, -radius + offset), (-lane_space - island_width/2 - offset, -radius + offset))
+        #         self.sim.create_segment((-radius, -lane_space - island_width/2 - offset), (-radius, lane_space + island_width/2 + offset))
+        #         self.sim.create_segment((-lane_space - island_width/2 - offset, radius), (lane_space + island_width/2 + offset, radius))
+                
+        #     # Turn into corners
+        #     if (i == 0):
+        #         # 16-19
+        #         self.sim.create_quadratic_bezier_curve((lane_space/2 + island_width/2 + offset, intersection_size/2), (lane_space/2 + island_width/2, radius - lane_space), (lane_space + island_width/2 + offset, radius - lane_space))
+        #         self.sim.create_quadratic_bezier_curve((intersection_size/2, -lane_space/2 - island_width/2 - offset), (radius, -lane_space/2 - island_width/2 - offset), (radius, -lane_space - island_width/2 - offset))
+        #         self.sim.create_quadratic_bezier_curve((-lane_space/2 - island_width/2 - offset, - intersection_size/2), (-lane_space/2 - island_width/2 - offset, -radius), (-lane_space - island_width/2 - offset, -radius))
+        #         self.sim.create_quadratic_bezier_curve((-intersection_size/2, lane_space/2 + island_width/2 + offset), (-radius, lane_space/2 + island_width/2 + offset), (-radius, lane_space + island_width/2 + offset))    
+        #     else:
+        #         # 40-43
+        #         self.sim.create_quadratic_bezier_curve((lane_space/2 + island_width/2 + offset, intersection_size/2), (lane_space/2 + island_width/2 + offset, radius), (lane_space + island_width/2 + offset, radius))
+        #         self.sim.create_quadratic_bezier_curve((intersection_size/2, -lane_space/2 - island_width/2 - offset), (radius, -lane_space/2 - island_width/2 - offset), (radius, -lane_space - island_width/2 - offset))
+        #         self.sim.create_quadratic_bezier_curve((-lane_space/2 - island_width/2 - offset, - intersection_size/2), (-lane_space/2 - island_width/2 - offset, -radius), (-lane_space - island_width/2 - offset, -radius))
+        #         self.sim.create_quadratic_bezier_curve((-intersection_size/2, lane_space/2 + island_width/2 + offset), (-radius, lane_space/2 + island_width/2 + offset), (-radius, lane_space + island_width/2 + offset))
             
-        # Adjust vehicle paths to accommodate two lanes (might require further refinement)
-        self.vg = VehicleGenerator({
+        #     # Turn to exits 20-23, 44-47
+        #     if (i == 0):
+        #         self.sim.create_quadratic_bezier_curve((radius, lane_space + island_width/2 + offset), (radius, lane_space/2 + island_width/2 + offset), (intersection_size/2, lane_space/2 + island_width/2 + offset))
+        #         self.sim.create_quadratic_bezier_curve((lane_space + island_width/2 + offset, -radius + lane_space), (lane_space/2 + island_width/2 + offset, -radius), (lane_space/2 + island_width/2 + offset, -intersection_size/2))
+        #         self.sim.create_quadratic_bezier_curve((-radius, -lane_space - island_width/2 - offset), (-radius, -lane_space/2 - island_width/2 - offset), (-intersection_size/2, -lane_space/2 - island_width/2 - offset))
+        #         self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2 - offset, radius), (-lane_space/2 - island_width/2 - offset, radius), (-lane_space/2 - island_width/2 - offset, intersection_size/2))
+        #     else:
+        #         self.sim.create_quadratic_bezier_curve((radius, lane_space + island_width/2 + offset), (radius, lane_space/2 + island_width/2 + offset), (intersection_size/2, lane_space/2 + island_width/2 + offset))
+        #         self.sim.create_quadratic_bezier_curve((lane_space + island_width/2 + offset, -radius), (lane_space/2 + island_width/2 + offset, -radius), (lane_space/2 + island_width/2 + offset, -intersection_size/2))
+        #         self.sim.create_quadratic_bezier_curve((-radius, -lane_space - island_width/2 - offset), (-radius, -lane_space/2 - island_width/2 - offset), (-intersection_size/2, -lane_space/2 - island_width/2 - offset))
+        #         self.sim.create_quadratic_bezier_curve((-lane_space - island_width/2 - offset, radius), (-lane_space/2 - island_width/2 - offset, radius), (-lane_space/2 - island_width/2 - offset, intersection_size/2))
+
+        # There's 24 total but count starts at 0, to get the other lane, just add 24
+        # Notation: Start Lane -> Exit Lane
+        # self.vg = VehicleGenerator({
+        #     'vehicles': [
+        #         # Bottom Right Lane -> Right Right Lane
+        #         (1, {'path': [24, 40, 8, 44, 29], 'v_max': self.v}),
+        #         # Bottom Right Lane -> Top Right Lane
+        #         (1, {'path': [24, 40, 8, 12, 9, 45, 30], 'v_max': self.v}),
+        #         # (1, {'path': [1, 17, 9, 21, 6], 'v_max': self.v}),
+        #         # (1, {'path': [2, 18, 10, 22, 7], 'v_max': self.v}),
+        #         # (1, {'path': [3, 19, 11, 23, 4], 'v_max': self.v}),
+        #         # Bottom Left Lane -> Top Left Lane 
+        #         (1, {'path': [0, 16, 32, 36, 33, 21, 6], 'v_max': self.v}),
+        #     ], 'vehicle_rate': 30
+        # })
+
+        # My new simulations
+        self.outerRingVehicles = VehicleGenerator({
             'vehicles': [
+                # Bottom Right Lane -> Right Right Lane
                 (1, {'path': [0, 16, 8, 20, 5], 'v_max': self.v}),
+                # Bottom Right Lane -> Top Right Lane
+                (1, {'path': [0, 16, 8, 12, 9, 21, 6], 'v_max': self.v}),
+                # Right Right Lane -> Top Right Lane
                 (1, {'path': [1, 17, 9, 21, 6], 'v_max': self.v}),
+                # Right Right Lane -> Left Right Lane
+                (1, {'path': [1, 17, 9, 13, 10, 22, 7], 'v_max': self.v}),
+                # Top Right Lane -> Left Right Lane
                 (1, {'path': [2, 18, 10, 22, 7], 'v_max': self.v}),
+                # Top Right Lane -> Bottom Right Lane
+                (1, {'path': [2, 18, 10, 14, 11, 23, 4], 'v_max': self.v}),
+                # Left Right Lane -> Bottom Right Lane
                 (1, {'path': [3, 19, 11, 23, 4], 'v_max': self.v}),
-            ], 'vehicle_rate': 30
+                # Left Right Lane -> Right Right Lane
+                (1, {'path': [3, 19, 11, 15, 8, 20, 5], 'v_max': self.v}),
+            ],
+            'vehicle_rate': 30
         })
 
-        self.sim.define_interfearing_paths([0, 16], [15, 8], turn=True)
-        self.sim.define_interfearing_paths([1, 17], [12, 9], turn=True)
-        self.sim.define_interfearing_paths([2, 18], [13, 10], turn=True)
-        self.sim.define_interfearing_paths([3, 19], [14, 11], turn=True)
-        self.sim.add_vehicle_generator(self.vg)
+        # self.sim.define_interfearing_paths([0, 16], [15, 8], turn=True)
+        # self.sim.define_interfearing_paths([1, 17], [12, 9], turn=True)
+        # self.sim.define_interfearing_paths([2, 18], [13, 10], turn=True)
+        # self.sim.define_interfearing_paths([3, 19], [14, 11], turn=True)
+        self.sim.add_vehicle_generator(self.outerRingVehicles)
 
     def get_sim(self):
         return self.sim
