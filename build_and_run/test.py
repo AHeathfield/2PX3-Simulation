@@ -109,8 +109,6 @@ class Intersection:
         self.sim.create_segment((-connectorStartX, -connectorStartY), (-connectorEndX, connectorEndY))
         self.sim.create_segment((-connectorStartY, connectorStartX), (connectorEndY, connectorEndX))
 
-
-
         # Turn into corners 40-43
         turnIntoRadius = 7.3 - offset
         newRadius = radius - offset
@@ -123,12 +121,35 @@ class Intersection:
         self.sim.create_quadratic_bezier_curve((-turnStartX, -turnStartY), (-turnIntoRadius, -newRadius), (-turnEndX, -turnEndY))
         self.sim.create_quadratic_bezier_curve((-turnStartY, turnStartX), (-newRadius, turnIntoRadius), (-turnEndY, turnEndX))
 
-        # Turn into exits 44-47\
-
+        # Turn into exits 44-47
         self.sim.create_quadratic_bezier_curve((turnEndY, turnEndX), (newRadius, turnIntoRadius), (turnStartY, turnStartX))
         self.sim.create_quadratic_bezier_curve((turnEndX, -turnEndY), (turnIntoRadius, -newRadius), (turnStartX, -turnStartY))
         self.sim.create_quadratic_bezier_curve((-turnEndY, -turnEndX), (-newRadius, -turnIntoRadius), (-turnStartY, -turnStartX))
         self.sim.create_quadratic_bezier_curve((-turnEndX, turnEndY), (-turnIntoRadius, newRadius), (-turnStartX, turnStartY))
+
+        # ========================= Designated Right Turn Into Hospital ===========================
+        # Entrance Lane 48
+        entranceStartX = 2*offset + lane_space/2 + island_width/2
+        entranceStartY = length + intersection_size/2
+        entranceEndX = 2*offset + lane_space/2 + island_width/2
+        entranceEndY = intersection_size/1.5
+        self.sim.create_segment((entranceStartX, entranceStartY), (entranceEndX, entranceEndY))
+        
+        # Turn Into corner 49
+        turnIntoRadius = 7.3 + 3.5
+        turnStartX = lane_space/2 + island_width/2 + 2*offset
+        turnStartY = intersection_size/1.5
+        turnEndX = lane_space + island_width/2 + 2*offset + 1
+        turnEndY = radius + (intersection_size/1.5 - intersection_size/2)
+        newRadiusY = radius + (intersection_size/1.5 - intersection_size/2)
+        self.sim.create_quadratic_bezier_curve((turnStartX, turnStartY), (turnIntoRadius, newRadiusY), (turnEndX, turnEndY))
+
+        # Exit 50
+        exitStartX = turnEndX - 0.5
+        exitStartY = turnEndY
+        exitEndX = entranceStartY
+        exitEndY = exitStartY
+        self.sim.create_segment((exitStartX, exitStartY), (exitEndX, exitEndY))
 
         # My new simulations
         # Entrances 0-3, 24-27
@@ -147,6 +168,7 @@ class Intersection:
         topToBottom = [2, 18, 10, 14, 11, 23, 4]
         leftToBottom = [3, 19, 11, 23, 4]
         leftToRight = [3, 19, 11, 15, 8, 20, 5]
+        # Regular vehicles BLUE
         self.outerRingVehicles = VehicleGenerator({
             'vehicles': [
                 # Bottom Right Lane -> Right Right Lane
@@ -182,6 +204,14 @@ class Intersection:
             ],
             'vehicle_rate': 30
         })
+        # Emergency Vehicle RED
+        emergencyIntoHospital = [48, 49, 50]
+        self.emergencyVehicles = VehicleGenerator({
+            'vehicles': [
+                (1, {'path': emergencyIntoHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
+            ],
+            'vehicle_rate': 10
+        })
         # Entrances 0-3, 24-27
         # Exits 4-7, 28-31
         # Ring Corners (Outer)8-11, (Inner)32-35
@@ -205,8 +235,10 @@ class Intersection:
         self.sim.define_interfearing_paths([40, 15], [41, 12], turn=True)
         self.sim.define_interfearing_paths([42, 13], [43, 14], turn=True)
 
+        # Adding vehicle generators to the simulate
         self.sim.add_vehicle_generator(self.outerRingVehicles)
         self.sim.add_vehicle_generator(self.innerRingVehicles)
+        self.sim.add_vehicle_generator(self.emergencyVehicles)
 
     def get_sim(self):
         return self.sim
