@@ -71,6 +71,65 @@ class Intersection:
         self.sim.create_quadratic_bezier_curve((-turnEndY, -turnEndX), (-radius, -turnIntoRadius), (-turnStartY, -turnStartX))
         self.sim.create_quadratic_bezier_curve((-turnEndX, turnEndY), (-turnIntoRadius, radius), (-turnStartX, turnStartY))
 
+        # ================================ LEFT LANES =======================================
+        # Entrances 24-27
+        entranceStartX = lane_space/2 + island_width/2
+        entranceStartY = length + intersection_size/2
+        entranceEndX = lane_space/2 + island_width/2
+        entranceEndY = intersection_size/2
+        self.sim.create_segment((entranceStartX, entranceStartY), (entranceEndX, entranceEndY))
+        self.sim.create_segment((entranceStartY, -entranceStartX), (entranceEndY, -entranceEndX))
+        self.sim.create_segment((-entranceStartX, -entranceStartY), (-entranceEndX, -entranceEndY))
+        self.sim.create_segment((-entranceStartY, entranceStartX), (-entranceEndY, entranceEndX))
+
+        # Exits 28-31
+        self.sim.create_segment((-entranceEndX, entranceEndY), (-entranceStartX, entranceStartY))
+        self.sim.create_segment((entranceEndY, entranceEndX), (entranceStartY, entranceStartX))
+        self.sim.create_segment((entranceEndX, -entranceEndY), (entranceStartX, -entranceStartY))
+        self.sim.create_segment((-entranceEndY, -entranceEndX), (-entranceStartY, -entranceStartX))
+        
+        # Inner Ring Corners 32-35
+        cornerStartX = lane_space + island_width/2 + 1.25*offset
+        cornerStartY = radius - 1.0*offset
+        innerRadius = radius - 3.3 
+        cornerEndX = cornerStartY
+        cornerEndY = cornerStartX
+        self.sim.create_quadratic_bezier_curve((cornerStartX, cornerStartY), (innerRadius, innerRadius), (cornerEndX, cornerEndY))
+        self.sim.create_quadratic_bezier_curve((cornerStartY, -cornerStartX), (innerRadius, -innerRadius), (cornerEndY, -cornerEndX))
+        self.sim.create_quadratic_bezier_curve((-cornerStartX, -cornerStartY), (-innerRadius, -innerRadius), (-cornerEndX, -cornerEndY))
+        self.sim.create_quadratic_bezier_curve((-cornerStartY, cornerStartX), (-innerRadius, innerRadius), (-cornerEndY, cornerEndX))
+        
+        # Inner Ring Connectors 36-39
+        connectorStartX = radius - offset
+        connectorStartY = lane_space + island_width/2 + 1.2*offset
+        connectorEndX = connectorStartX
+        connectorEndY = connectorStartY
+        self.sim.create_segment((connectorStartX, connectorStartY), (connectorEndX, -connectorEndY))
+        self.sim.create_segment((connectorStartY, -connectorStartX), (-connectorEndY, -connectorEndX))
+        self.sim.create_segment((-connectorStartX, -connectorStartY), (-connectorEndX, connectorEndY))
+        self.sim.create_segment((-connectorStartY, connectorStartX), (connectorEndY, connectorEndX))
+
+
+
+        # Turn into corners 40-43
+        turnIntoRadius = 7.3 - offset
+        newRadius = radius - offset
+        turnStartX = lane_space/2 + island_width/2
+        turnStartY = intersection_size/2
+        turnEndX = lane_space + island_width/2 + offset + 1
+        turnEndY = radius - offset
+        self.sim.create_quadratic_bezier_curve((turnStartX, turnStartY), (turnIntoRadius, newRadius), (turnEndX, turnEndY))
+        self.sim.create_quadratic_bezier_curve((turnStartY, -turnStartX), (newRadius, -turnIntoRadius), (turnEndY, -turnEndX))
+        self.sim.create_quadratic_bezier_curve((-turnStartX, -turnStartY), (-turnIntoRadius, -newRadius), (-turnEndX, -turnEndY))
+        self.sim.create_quadratic_bezier_curve((-turnStartY, turnStartX), (-newRadius, turnIntoRadius), (-turnEndY, turnEndX))
+
+        # Turn into exits 44-47\
+
+        self.sim.create_quadratic_bezier_curve((turnEndY, turnEndX), (newRadius, turnIntoRadius), (turnStartY, turnStartX))
+        self.sim.create_quadratic_bezier_curve((turnEndX, -turnEndY), (turnIntoRadius, -newRadius), (turnStartX, -turnStartY))
+        self.sim.create_quadratic_bezier_curve((-turnEndY, -turnEndX), (-newRadius, -turnIntoRadius), (-turnStartY, -turnStartX))
+        self.sim.create_quadratic_bezier_curve((-turnEndX, turnEndY), (-turnIntoRadius, newRadius), (-turnStartX, turnStartY))
+
 
         # The general order it bottom, right, top, left
         # for i in range(num_lanes):
@@ -161,24 +220,58 @@ class Intersection:
         # Outer Ring Connectors 12-15, 36-39
         # Turn into corners 16-19, 40-43
         # Turn into exits 20-23, 44-47
+
+        # =============================== PATHS =============================
+        bottomToRight = [0, 16, 8, 20, 5]
+        bottomToTop = [0, 16, 8, 12, 9, 21, 6]
+        rightToTop = [1, 17, 9, 21, 6]
+        rightToLeft = [1, 17, 9, 13, 10, 22, 7]
+        topToLeft = [2, 18, 10, 22, 7]
+        topToBottom = [2, 18, 10, 14, 11, 23, 4]
+        leftToBottom = [3, 19, 11, 23, 4]
+        leftToRight = [3, 19, 11, 15, 8, 20, 5]
         self.outerRingVehicles = VehicleGenerator({
             'vehicles': [
                 # Bottom Right Lane -> Right Right Lane
-                (1, {'path': [0, 16, 8, 20, 5], 'v_max': self.v}),
+                (1, {'path': bottomToRight, 'v_max': self.v}),
+                # (1, {'path': [0, 16], 'v_max': self.v}),
                 # Bottom Right Lane -> Top Right Lane
-                (1, {'path': [0, 16, 8, 12, 9, 21, 6], 'v_max': self.v}),
+                (1, {'path': bottomToTop, 'v_max': self.v}),
                 # Right Right Lane -> Top Right Lane
-                (1, {'path': [1, 17, 9, 21, 6], 'v_max': self.v}),
+                (1, {'path': rightToTop, 'v_max': self.v}),
                 # Right Right Lane -> Left Right Lane
-                (1, {'path': [1, 17, 9, 13, 10, 22, 7], 'v_max': self.v}),
+                (1, {'path': rightToLeft, 'v_max': self.v}),
                 # Top Right Lane -> Left Right Lane
-                (1, {'path': [2, 18, 10, 22, 7], 'v_max': self.v}),
+                (1, {'path': topToLeft, 'v_max': self.v}),
                 # Top Right Lane -> Bottom Right Lane
-                (1, {'path': [2, 18, 10, 14, 11, 23, 4], 'v_max': self.v}),
+                (1, {'path': topToBottom, 'v_max': self.v}),
                 # Left Right Lane -> Bottom Right Lane
-                (1, {'path': [3, 19, 11, 23, 4], 'v_max': self.v}),
+                (1, {'path': leftToBottom, 'v_max': self.v}),
                 # Left Right Lane -> Right Right Lane
-                (1, {'path': [3, 19, 11, 15, 8, 20, 5], 'v_max': self.v}),
+                (1, {'path': leftToRight, 'v_max': self.v}),
+            ],
+            'vehicle_rate': 30
+        })
+        self.innerRingVehicles = VehicleGenerator({
+            'vehicles': [
+                # Bottom Right Lane -> Right Right Lane
+                (1, {'path': self.nextLanePath(bottomToRight), 'v_max': self.v}),
+                # (1, {'path': [0, 16], 'v_max': self.v}),
+                # Bottom Right Lane -> Top Right Lane
+                (1, {'path': self.nextLanePath(bottomToTop), 'v_max': self.v}),
+                # Right Right Lane -> Top Right Lane
+                (1, {'path': self.nextLanePath(rightToTop), 'v_max': self.v}),
+                # Right Right Lane -> Left Right Lane
+                (1, {'path': self.nextLanePath(rightToLeft), 'v_max': self.v}),
+                # Top Right Lane -> Left Right Lane
+                (1, {'path': self.nextLanePath(topToLeft), 'v_max': self.v}),
+                # Top Right Lane -> Bottom Right Lane
+                (1, {'path': self.nextLanePath(topToBottom), 'v_max': self.v}),
+                # Left Right Lane -> Bottom Right Lane
+                (1, {'path': self.nextLanePath(leftToBottom), 'v_max': self.v}),
+                # Left Right Lane -> Right Right Lane
+                (1, {'path': self.nextLanePath(leftToRight), 'v_max': self.v}),
+
             ],
             'vehicle_rate': 30
         })
@@ -193,6 +286,15 @@ class Intersection:
         self.sim.define_interfearing_paths([2, 18], [13, 10], turn=True)
         self.sim.define_interfearing_paths([3, 19], [14, 11], turn=True)
         self.sim.add_vehicle_generator(self.outerRingVehicles)
+        self.sim.add_vehicle_generator(self.innerRingVehicles)
 
     def get_sim(self):
         return self.sim
+    
+    # The way I defined the segments is I created on lane for whole roundabout, then I added another lane, each lane consists of 24 segments, to get to the next lane you simply add 24 to the segment index
+    def nextLanePath(self, path):
+        newPath = path.copy() # Just in case we don't want to modify the given list
+        for i in range(len(path)):
+            newPath[i] += 24
+        return newPath
+
