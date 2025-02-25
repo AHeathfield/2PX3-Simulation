@@ -1,4 +1,5 @@
 from trafficSimulator import *
+from collections import deque
 import numpy as np
 
 class Intersection:
@@ -151,6 +152,18 @@ class Intersection:
         exitEndY = exitStartY
         self.sim.create_segment((exitStartX, exitStartY), (exitEndX, exitEndY))
 
+        # ========================== Pedestrian =======================
+        # Overpass 51-54
+        crossStartX = lane_space + island_width/2 + 5*offset
+        crossStartY =  2*offset + lane_space/2 + island_width/2
+        crossEndX = crossStartX
+        crossEndY = -crossStartY
+        overpassConfigs = {"vehicles": deque(), "width": 3.0, "has_traffic_signal": False, "color": (205,133,63)}
+        self.sim.create_segment((crossStartX, crossStartY), (crossEndX, crossEndY), overpassConfigs)
+        self.sim.create_segment((-crossStartY, -crossStartX), (-crossEndY, -crossEndX), overpassConfigs)
+        self.sim.create_segment((-crossStartX, -crossStartY), (-crossEndX, -crossEndY), overpassConfigs)
+        self.sim.create_segment((crossStartY, crossStartX), (crossEndY, crossEndX), overpassConfigs)
+
         # My new simulations
         # Entrances 0-3, 24-27
         # Exits 4-7, 28-31
@@ -212,6 +225,14 @@ class Intersection:
             ],
             'vehicle_rate': 10
         })
+        # Pedestrians Green
+        overpassRight = [51]
+        self.pedestrians = VehicleGenerator({
+            'vehicles': [
+                (1, {'path': overpassRight, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
+            ],
+            'vehicle_rate': 10
+        })
         # Entrances 0-3, 24-27
         # Exits 4-7, 28-31
         # Ring Corners (Outer)8-11, (Inner)32-35
@@ -239,6 +260,7 @@ class Intersection:
         self.sim.add_vehicle_generator(self.outerRingVehicles)
         self.sim.add_vehicle_generator(self.innerRingVehicles)
         self.sim.add_vehicle_generator(self.emergencyVehicles)
+        self.sim.add_vehicle_generator(self.pedestrians)
 
     def get_sim(self):
         return self.sim
