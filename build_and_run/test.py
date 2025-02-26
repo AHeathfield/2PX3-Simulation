@@ -129,36 +129,46 @@ class Intersection:
         self.sim.create_quadratic_bezier_curve((-turnEndX, turnEndY), (-turnIntoRadius, newRadius), (-turnStartX, turnStartY))
 
         # ========================= Designated Right Turn Into Hospital ===========================
+        emergencyConfig = {"color": (99,99,99)}
+
         # Entrance Lane 48
         entranceStartX = 2*offset + lane_space/2 + island_width/2
-        entranceStartY = length + intersection_size/2
+        entranceEndY = intersection_size/2 + 15
         entranceEndX = 2*offset + lane_space/2 + island_width/2
-        entranceEndY = intersection_size/1.5
-        self.sim.create_segment((entranceStartX, entranceStartY), (entranceEndX, entranceEndY))
-        
+        entranceStartY = intersection_size/2
+        # Top right (special case) ================================
+        self.sim.create_segment((entranceStartX, -entranceStartY), (entranceEndX, -entranceEndY), emergencyConfig)
         # Turn Into corner 49
         turnIntoRadius = 7.3 + 3.5
         turnStartX = lane_space/2 + island_width/2 + 2*offset
-        turnStartY = intersection_size/1.5
+        turnStartY = entranceEndY - 1
+        # turnStartY = intersection_size/1.5 + 15
         turnEndX = lane_space + island_width/2 + 2*offset + 1
-        turnEndY = radius + (intersection_size/1.5 - intersection_size/2)
-        newRadiusY = radius + (intersection_size/1.5 - intersection_size/2)
-        self.sim.create_quadratic_bezier_curve((turnStartX, turnStartY), (turnIntoRadius, newRadiusY), (turnEndX, turnEndY))
+        turnEndY = radius + (intersection_size/1.5 - intersection_size/2) + 15
+        newRadiusY = radius + (intersection_size/1.5 - intersection_size/2) + 15
+        self.sim.create_quadratic_bezier_curve((turnStartX, -turnStartY), (turnIntoRadius, -newRadiusY), (turnEndX, -turnEndY), emergencyConfig)
 
         # Exit 50
         exitStartX = turnEndX - 0.5
         exitStartY = turnEndY
-        exitEndX = entranceStartY
+        exitEndX = 2*length
         exitEndY = exitStartY
-        self.sim.create_segment((exitStartX, exitStartY), (exitEndX, exitEndY))
+        self.sim.create_segment((exitStartX, -exitStartY), (exitEndX, -exitEndY), emergencyConfig)
 
+
+        # Normal Emergency Entrances =======================
+        # Entrance 51
+        entranceStartY += length
+        entranceEndY -= offset
+        self.sim.create_segment((entranceStartX, entranceStartY), (entranceEndX, entranceEndY))
+        
         # ========================== Pedestrian =======================
         # Overpass 51-54
         crossStartX = lane_space + island_width/2 + 5*offset
         crossStartY =  2*offset + lane_space/2 + island_width/2
         crossEndX = crossStartX
         crossEndY = -crossStartY
-        overpassConfigs = {"vehicles": deque(), "width": 3.0, "has_traffic_signal": False, "color": (205,133,63)}
+        overpassConfigs = {"color": (205,133,63)}
         self.sim.create_segment((crossStartX, crossStartY), (crossEndX, crossEndY), overpassConfigs)
         self.sim.create_segment((-crossStartY, -crossStartX), (-crossEndY, -crossEndX), overpassConfigs)
         self.sim.create_segment((-crossStartX, -crossStartY), (-crossEndX, -crossEndY), overpassConfigs)
@@ -171,7 +181,6 @@ class Intersection:
         # Outer Ring Connectors 12-15, 36-39
         # Turn into corners 16-19, 40-43
         # Turn into exits 20-23, 44-47
-
         # =============================== PATHS =============================
         bottomToRight = [0, 16, 8, 20, 5]
         bottomToTop = [0, 16, 8, 12, 9, 21, 6]
@@ -227,8 +236,14 @@ class Intersection:
         })
         # Pedestrians Green
         overpassRight = [51]
+        overpassTop = [52]
+        overpassLeft = [53]
+        overpassBottom = [54]
         self.pedestrians = VehicleGenerator({
             'vehicles': [
+                (1, {'path': overpassRight, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
+                (1, {'path': overpassTop, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
+                (1, {'path': overpassLeft, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
                 (1, {'path': overpassRight, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
             ],
             'vehicle_rate': 10

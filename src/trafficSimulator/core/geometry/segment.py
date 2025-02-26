@@ -15,19 +15,16 @@ class Segment(ABC):
         self.width = 3.5
         self.has_traffic_signal = False
 
-        # Adding this to change color of segment
+        # Adding this to change color of segment (this is default)
         self.color = (180, 180, 220)
 
 
         self.set_functions()
-        for attr, val in config.items():
+        self.configure_configs(config)
+        # for attr, val in config.items():
             #AIDAN TEST
             # print(attr, val)
-            setattr(self, attr, val)
-
-     
-
-        
+            # setattr(self, attr, val)
     
 
 
@@ -149,3 +146,8 @@ class Segment(ABC):
             i = self.traffic_signal_group
             return self.traffic_signal.current_cycle[i]
         return True
+    
+    #AIDAN added
+    def configure_configs(self, config={}):
+        for attr, val in config.items():
+            setattr(self, attr, val)

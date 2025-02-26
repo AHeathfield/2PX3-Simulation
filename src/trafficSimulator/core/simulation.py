@@ -41,9 +41,6 @@ class Simulation:
     def add_vehicle_generator(self, gen):
         self.vehicle_generator.append(gen)
   
-
-
-
     
     def create_vehicle(self, **kwargs):
         veh = Vehicle(kwargs)
@@ -60,8 +57,10 @@ class Simulation:
 
         self.add_segment(seg)
 
-    def create_quadratic_bezier_curve(self, start, control, end):
+    # IM going to try to add config so we can add colour
+    def create_quadratic_bezier_curve(self, start, control, end, config={}):
         cur = QuadraticCurve(start, control, end)
+        cur.configure_configs(config)
         self.add_segment(cur)
 
     def create_cubic_bezier_curve(self, start, control_1, control_2, end):
