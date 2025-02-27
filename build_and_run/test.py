@@ -132,24 +132,25 @@ class Intersection:
         emergencyConfig = {"color": (99,99,99)}
 
         # Entrance Lane 48
-        entranceStartX = 2*offset + lane_space/2 + island_width/2
+        entranceStartX = radius + 5*offset - 0.5
         entranceEndY = intersection_size/2 + 15
-        entranceEndX = 2*offset + lane_space/2 + island_width/2
-        entranceStartY = intersection_size/2
+        entranceEndX = entranceStartX
+        entranceStartY = lane_space + island_width/2 + 1.25*offset + offset
         # Top right (special case) ================================
-        self.sim.create_segment((entranceStartX, -entranceStartY), (entranceEndX, -entranceEndY), emergencyConfig)
+        self.sim.create_segment((entranceStartX, -entranceStartY), (entranceEndX, -entranceEndY - 0.5), emergencyConfig)
+
         # Turn Into corner 49
-        turnIntoRadius = 7.3 + 3.5
-        turnStartX = lane_space/2 + island_width/2 + 2*offset
-        turnStartY = entranceEndY - 1
+        turnIntoRadius = 7.3 + 8*3.5
+        turnStartX = entranceStartX
+        turnStartY = entranceEndY
         # turnStartY = intersection_size/1.5 + 15
-        turnEndX = lane_space + island_width/2 + 2*offset + 1
-        turnEndY = radius + (intersection_size/1.5 - intersection_size/2) + 15
-        newRadiusY = radius + (intersection_size/1.5 - intersection_size/2) + 15
+        turnEndX = entranceStartX + offset + 1
+        turnEndY = radius + (intersection_size/1.5 - intersection_size/2) + 15 + 3
+        newRadiusY = radius + (intersection_size/1.5 - intersection_size/2) + 15 + 3
         self.sim.create_quadratic_bezier_curve((turnStartX, -turnStartY), (turnIntoRadius, -newRadiusY), (turnEndX, -turnEndY), emergencyConfig)
 
         # Exit 50
-        exitStartX = turnEndX - 0.5
+        exitStartX = turnEndX
         exitStartY = turnEndY
         exitEndX = 2*length
         exitEndY = exitStartY
@@ -157,10 +158,51 @@ class Intersection:
 
 
         # Normal Emergency Entrances =======================
-        # Entrance 51
-        entranceStartY += length
-        entranceEndY -= offset
-        self.sim.create_segment((entranceStartX, entranceStartY), (entranceEndX, entranceEndY))
+        # Emergency entrances 51-54
+        entranceStartX = 2*offset + lane_space/2 + island_width/2
+        entranceStartY = length + intersection_size/2
+        entranceEndX = 2*offset + lane_space/2 + island_width/2
+        entranceEndY = intersection_size/2 + 4*offset
+        self.sim.create_segment((entranceStartX, entranceStartY), (entranceEndX, entranceEndY), emergencyConfig)
+        self.sim.create_segment((entranceStartY, -entranceStartX), (entranceEndY, -entranceEndX), emergencyConfig)
+        self.sim.create_segment((-entranceStartX, -entranceStartY), (-entranceEndX, -entranceEndY), emergencyConfig)
+        self.sim.create_segment((-entranceStartY, entranceStartX), (-entranceEndY, entranceEndX), emergencyConfig)
+
+        # Emergency outer ring corners 55-57
+        cornerStartX = lane_space + island_width/2 + 1.25*offset + offset
+        cornerStartY = radius + 5*offset - 0.5
+        newRadius = radius + 5.3*3.3
+        cornerEndX = cornerStartY
+        cornerEndY = cornerStartX
+        self.sim.create_quadratic_bezier_curve((cornerStartX, cornerStartY), (newRadius, newRadius), (cornerEndX, cornerEndY), emergencyConfig)
+        # self.sim.create_quadratic_bezier_curve((cornerStartY, -cornerStartX), (newRadius, -newRadius), (cornerEndY, -cornerEndX), emergencyConfig)
+        self.sim.create_quadratic_bezier_curve((-cornerStartX, -cornerStartY), (-newRadius, -newRadius), (-cornerEndX, -cornerEndY), emergencyConfig)
+        self.sim.create_quadratic_bezier_curve((-cornerStartY, cornerStartX), (-newRadius, newRadius), (-cornerEndY, cornerEndX), emergencyConfig)
+
+        # Emergency Outer Ring Connectors 58-60
+        connectorStartX = cornerEndX
+        # connectorStartY = lane_space + island_width/2 + 1.2*offset
+        connectorStartY = cornerStartX
+        connectorEndX = connectorStartX
+        connectorEndY = connectorStartY
+        self.sim.create_segment((connectorStartX, connectorStartY), (connectorEndX, -connectorEndY), emergencyConfig)
+        # self.sim.create_segment((connectorStartY, -connectorStartX), (-connectorEndY, -connectorEndX), emergencyConfig)
+        self.sim.create_segment((-connectorStartX, -connectorStartY), (-connectorEndX, connectorEndY), emergencyConfig)
+        self.sim.create_segment((-connectorStartY, connectorStartX), (connectorEndY, connectorEndX), emergencyConfig)
+
+        # Turn into emergency corners 60-63
+        # emergencyConfig = {'color': (255, 0, 0)}
+        turnIntoRadius = 7.3 + offset
+        newRadius = radius + 4.8*offset
+        turnStartX = lane_space/2 + island_width/2 + 2*offset
+        turnStartY = intersection_size/2 + 4*offset
+        turnEndX = lane_space + island_width/2 + 2*offset + 1
+        turnEndY = turnStartY - offset
+        self.sim.create_quadratic_bezier_curve((turnStartX, turnStartY), (turnIntoRadius, newRadius), (turnEndX, turnEndY), emergencyConfig)
+        self.sim.create_quadratic_bezier_curve((turnStartY, -turnStartX), (newRadius, -turnIntoRadius), (turnEndY, -turnEndX), emergencyConfig)
+        self.sim.create_quadratic_bezier_curve((-turnStartX, -turnStartY), (-turnIntoRadius, -newRadius), (-turnEndX, -turnEndY), emergencyConfig)
+        self.sim.create_quadratic_bezier_curve((-turnStartY, turnStartX), (-newRadius, turnIntoRadius), (-turnEndY, turnEndX), emergencyConfig)
+
         
         # ========================== Pedestrian =======================
         # Overpass 51-54
@@ -231,6 +273,7 @@ class Intersection:
         self.emergencyVehicles = VehicleGenerator({
             'vehicles': [
                 (1, {'path': emergencyIntoHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': [51, 62, 55, 59], 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
             ],
             'vehicle_rate': 10
         })
