@@ -5,6 +5,8 @@
 # from my_intersection import *
 from test import *
 
+# Do 2 simulations one with self driving one without
+
 #defining the intersection
 intersection = Intersection()
 #assigning the simulation

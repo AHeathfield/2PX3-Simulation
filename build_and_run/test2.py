@@ -49,7 +49,7 @@ class Intersection:
         connectorStartY = lane_space + island_width/2 + 1.2*offset
         connectorEndX = connectorStartX
         connectorEndY = connectorStartY
-        self.sim.create_segment((connectorStartX, connectorStartY), (connectorEndX, -connectorEndY))
+        # self.sim.create_segment((connectorStartX, connectorStartY), (connectorEndX, -connectorEndY))
         self.sim.create_segment((connectorStartY, -connectorStartX), (-connectorEndY, -connectorEndX))
         self.sim.create_segment((-connectorStartX, -connectorStartY), (-connectorEndX, connectorEndY))
         self.sim.create_segment((-connectorStartY, connectorStartX), (connectorEndY, connectorEndX))

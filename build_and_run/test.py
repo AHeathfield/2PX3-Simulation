@@ -190,7 +190,7 @@ class Intersection:
         self.sim.create_segment((-connectorStartX, -connectorStartY), (-connectorEndX, connectorEndY), emergencyConfig)
         self.sim.create_segment((-connectorStartY, connectorStartX), (connectorEndY, connectorEndX), emergencyConfig)
 
-        # Turn into emergency corners 60-63
+        # Turn into emergency corners 61-64
         # emergencyConfig = {'color': (255, 0, 0)}
         turnIntoRadius = 7.3 + offset
         newRadius = radius + 4.8*offset
@@ -205,7 +205,7 @@ class Intersection:
 
         
         # ========================== Pedestrian =======================
-        # Overpass 51-54
+        # Overpass 65-68
         crossStartX = lane_space + island_width/2 + 5*offset
         crossStartY =  2*offset + lane_space/2 + island_width/2
         crossEndX = crossStartX
@@ -269,44 +269,61 @@ class Intersection:
             'vehicle_rate': 30
         })
         # Emergency Vehicle RED
-        emergencyIntoHospital = [48, 49, 50]
+        emergencyTopToHospital = [53, 63, 56, 59, 57, 60, 55, 58, 48, 49, 50]
+        emergencyLeftToHospital = [54, 64, 57, 60, 55, 58, 48, 49, 50]
+        emergencyBottomToHospital = [51, 61, 55, 58, 48, 49, 50]
+        emergencyRightToHospital = [52, 62, 48, 49, 50]
+
         self.emergencyVehicles = VehicleGenerator({
             'vehicles': [
-                (1, {'path': emergencyIntoHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
-                (1, {'path': [51, 62, 55, 59], 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyTopToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyLeftToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyBottomToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyRightToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
             ],
             'vehicle_rate': 10
         })
         # Pedestrians Green
-        overpassRight = [51]
-        overpassTop = [52]
-        overpassLeft = [53]
-        overpassBottom = [54]
+        overpassRight = [65]
+        overpassTop = [66]
+        overpassLeft = [67]
+        overpassBottom = [68]
         self.pedestrians = VehicleGenerator({
             'vehicles': [
                 (1, {'path': overpassRight, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
                 (1, {'path': overpassTop, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
                 (1, {'path': overpassLeft, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
-                (1, {'path': overpassRight, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
+                (1, {'path': overpassBottom, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
             ],
             'vehicle_rate': 10
         })
         # Entrances 0-3, 24-27
         # Exits 4-7, 28-31
         # Ring Corners (Outer)8-11, (Inner)32-35
-        # Ring Connectors (Outer)12-15, (Inner)36-39
+        # Ring Connectors (Outer)12-15, (Inner)36-39 (STARTS AT RIGHT)
         # Turn into corners 16-19, 40-43
         # Turn into exits 20-23, 44-47
-        # Right Lane Entrances and Connectors to Corners
-        self.sim.define_interfearing_paths([0, 16], [15, 8], turn=True)
-        self.sim.define_interfearing_paths([1, 17], [12, 9], turn=True)
-        self.sim.define_interfearing_paths([2, 18], [13, 10], turn=True)
-        self.sim.define_interfearing_paths([3, 19], [14, 11], turn=True)
-        # Left Lane Entrances and Connectors to Corners
-        self.sim.define_interfearing_paths([24, 40], [39, 32], turn=True)
-        self.sim.define_interfearing_paths([25, 41], [36, 33], turn=True)
-        self.sim.define_interfearing_paths([26, 42], [37, 34], turn=True)
-        self.sim.define_interfearing_paths([27, 43], [38, 35], turn=True)
+        # Right Lane Entrances to into corners, into corners to connectors
+        self.sim.define_interfearing_paths([0, 16], [16, 15], turn=True)
+        self.sim.define_interfearing_paths([1, 17], [17, 12], turn=True)
+        self.sim.define_interfearing_paths([2, 18], [18, 13], turn=True)
+        self.sim.define_interfearing_paths([3, 19], [19, 14], turn=True)
+
+        # Left Lane Entrances to into corners, into corners to inner connectors
+        self.sim.define_interfearing_paths([24, 40], [40, 39], turn=True)
+        self.sim.define_interfearing_paths([25, 41], [41, 36], turn=True)
+        self.sim.define_interfearing_paths([26, 42], [42, 37], turn=True)
+        self.sim.define_interfearing_paths([27, 43], [43, 38], turn=True)
+        # This is for the into corners to outer connectors (this is a very confusing method)
+        self.sim.define_interfearing_paths([24, 40], [40, 15], turn=True)
+        self.sim.define_interfearing_paths([25, 41], [41, 12], turn=True)
+        self.sim.define_interfearing_paths([26, 42], [42, 13], turn=True)
+        self.sim.define_interfearing_paths([27, 43], [43, 14], turn=True)
+        
+        # self.sim.define_interfearing_paths([24, 40], [39, 32], turn=True)
+        # self.sim.define_interfearing_paths([25, 41], [36, 33], turn=True)
+        # self.sim.define_interfearing_paths([26, 42], [37, 34], turn=True)
+        # self.sim.define_interfearing_paths([27, 43], [38, 35], turn=True)
         # Right Lane Turn intos interfearing with connectors, turn into interfearing with corner
         # self.sim.define_interfearing_paths([17, 9], [16, 8], turn=True)
         # self.sim.define_interfearing_paths([16, 15], [15, 16], turn=True)
