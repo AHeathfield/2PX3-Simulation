@@ -2,16 +2,27 @@ from trafficSimulator import *
 from collections import deque
 import numpy as np
 
+# NOTE WHEN self.self_driving_vehicle_proportion = 1, the program doesn't work i'm not sure why, to counter this I made self_driving_team_simulation.py
 class Intersection:
     def __init__(self):
+        # ============================= Class Variables ==============================
+        self.speed_variance = 2
+        self.v = 8.5
+        self.self_driving_vehicle_proportion = 1 # IMPORTANT number between 0 and 1, 0 means no self driving vehicles, 1 means entirely self driving vehicles
+        if self.self_driving_vehicle_proportion == 1:
+            self.v = self.v * 1.5
+        self.vehicle_rate = 30*(1-self.self_driving_vehicle_proportion)
+        self.self_driving_vehicle_rate = 30*self.self_driving_vehicle_proportion
+        self.pedestrian_rate = 50
         self.sim = Simulation()
+        # ============================================================================
+
         lane_space = 3.5
         num_lanes = 2
         intersection_size = 49
         island_width = 4
         length = 43.75
         radius = 18 
-        self.v = 8.5
 
         offset = lane_space
         adj = 0.45   # This is a number to adjust the offset
@@ -202,7 +213,6 @@ class Intersection:
         self.sim.create_quadratic_bezier_curve((turnStartY, -turnStartX), (newRadius, -turnIntoRadius), (turnEndY, -turnEndX), emergencyConfig)
         self.sim.create_quadratic_bezier_curve((-turnStartX, -turnStartY), (-turnIntoRadius, -newRadius), (-turnEndX, -turnEndY), emergencyConfig)
         self.sim.create_quadratic_bezier_curve((-turnStartY, turnStartX), (-newRadius, turnIntoRadius), (-turnEndY, turnEndX), emergencyConfig)
-
         
         # ========================== Pedestrian =======================
         # Overpass 65-68
@@ -215,6 +225,16 @@ class Intersection:
         self.sim.create_segment((-crossStartY, -crossStartX), (-crossEndY, -crossEndX), overpassConfigs)
         self.sim.create_segment((-crossStartX, -crossStartY), (-crossEndX, -crossEndY), overpassConfigs)
         self.sim.create_segment((crossStartY, crossStartX), (crossEndY, crossEndX), overpassConfigs)
+
+        # ========================== Bus Lanes ===================
+        entranceStartX = 2*offset + lane_space/2 + island_width/2
+        entranceStartY = length + intersection_size/2
+        entranceEndX = 2*offset + lane_space/2 + island_width/2
+        entranceEndY = intersection_size/2 + 4*offset
+        self.sim.create_segment((-entranceEndX, entranceEndY), (-entranceStartX, entranceStartY))
+        self.sim.create_segment((entranceEndY, entranceEndX), (entranceStartY, entranceStartX))
+        self.sim.create_segment((entranceEndX, -entranceEndY), (entranceStartX, -entranceStartY))
+        self.sim.create_segment((-entranceEndY, -entranceEndX), (-entranceStartY, -entranceStartX))
 
         # My new simulations
         # Entrances 0-3, 24-27
@@ -236,52 +256,102 @@ class Intersection:
         self.outerRingVehicles = VehicleGenerator({
             'vehicles': [
                 # Bottom Right Lane -> Right Right Lane
-                (1, {'path': bottomToRight, 'v_max': self.v}),
-                # (1, {'path': [0, 16], 'v_max': self.v}),
+                (1, {'path': bottomToRight, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                # (1, {'path': [0, 16], 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
                 # Bottom Right Lane -> Top Right Lane
-                (1, {'path': bottomToTop, 'v_max': self.v}),
+                (1, {'path': bottomToTop, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
                 # Right Right Lane -> Top Right Lane
-                (1, {'path': rightToTop, 'v_max': self.v}),
+                (1, {'path': rightToTop, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
                 # Right Right Lane -> Left Right Lane
-                (1, {'path': rightToLeft, 'v_max': self.v}),
+                (1, {'path': rightToLeft, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
                 # Top Right Lane -> Left Right Lane
-                (1, {'path': topToLeft, 'v_max': self.v}),
+                (1, {'path': topToLeft, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
                 # Top Right Lane -> Bottom Right Lane
-                (1, {'path': topToBottom, 'v_max': self.v}),
+                (1, {'path': topToBottom, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
                 # Left Right Lane -> Bottom Right Lane
-                (1, {'path': leftToBottom, 'v_max': self.v}),
+                (1, {'path': leftToBottom, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
                 # Left Right Lane -> Right Right Lane
-                (1, {'path': leftToRight, 'v_max': self.v}),
+                (1, {'path': leftToRight, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
             ],
-            'vehicle_rate': 30
+            'vehicle_rate': self.vehicle_rate
         })
         self.innerRingVehicles = VehicleGenerator({
             'vehicles': [
-                (1, {'path': self.nextLanePath(bottomToRight), 'v_max': self.v}),
-                (1, {'path': self.nextLanePath(bottomToTop), 'v_max': self.v}),
-                (1, {'path': self.nextLanePath(rightToTop), 'v_max': self.v}),
-                (1, {'path': self.nextLanePath(rightToLeft), 'v_max': self.v}),
-                (1, {'path': self.nextLanePath(topToLeft), 'v_max': self.v}),
-                (1, {'path': self.nextLanePath(topToBottom), 'v_max': self.v}),
-                (1, {'path': self.nextLanePath(leftToBottom), 'v_max': self.v}),
-                (1, {'path': self.nextLanePath(leftToRight), 'v_max': self.v}),
+                (1, {'path': self.nextLanePath(bottomToRight), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                (1, {'path': self.nextLanePath(bottomToTop), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                (1, {'path': self.nextLanePath(rightToTop), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                (1, {'path': self.nextLanePath(rightToLeft), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                (1, {'path': self.nextLanePath(topToLeft), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                (1, {'path': self.nextLanePath(topToBottom), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                (1, {'path': self.nextLanePath(leftToBottom), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
+                (1, {'path': self.nextLanePath(leftToRight), 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
             ],
-            'vehicle_rate': 30
+            'vehicle_rate': self.vehicle_rate
         })
+
+        # Self Driving vehicles
+        self.selfDrivingOuterRingVehicles = VehicleGenerator({
+            'vehicles': [
+                # Bottom Right Lane -> Right Right Lane
+                (1, {'path': bottomToRight, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                # (1, {'path': [0, 16], 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                # Bottom Right Lane -> Top Right Lane
+                (1, {'path': bottomToTop, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                # Right Right Lane -> Top Right Lane
+                (1, {'path': rightToTop, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                # Right Right Lane -> Left Right Lane
+                (1, {'path': rightToLeft, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                # Top Right Lane -> Left Right Lane
+                (1, {'path': topToLeft, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                # Top Right Lane -> Bottom Right Lane
+                (1, {'path': topToBottom, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                # Left Right Lane -> Bottom Right Lane
+                (1, {'path': leftToBottom, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                # Left Right Lane -> Right Right Lane
+                (1, {'path': leftToRight, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+            ],
+            'vehicle_rate': self.self_driving_vehicle_rate
+        })
+        self.selfDrivingInnerRingVehicles = VehicleGenerator({
+            'vehicles': [
+                (1, {'path': self.nextLanePath(bottomToRight), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': self.nextLanePath(bottomToTop), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': self.nextLanePath(rightToTop), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': self.nextLanePath(rightToLeft), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': self.nextLanePath(topToLeft), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': self.nextLanePath(topToBottom), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': self.nextLanePath(leftToBottom), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': self.nextLanePath(leftToRight), 'v_max': self.v, 'T':0.1, 's0' : 4, 'colour': (114, 4, 204)}),
+            ],
+            'vehicle_rate': self.self_driving_vehicle_rate
+        })
+
         # Emergency Vehicle RED
+        emergencyVehicleRate = self.vehicle_rate/2
+
         emergencyTopToHospital = [53, 63, 56, 59, 57, 60, 55, 58, 48, 49, 50]
         emergencyLeftToHospital = [54, 64, 57, 60, 55, 58, 48, 49, 50]
         emergencyBottomToHospital = [51, 61, 55, 58, 48, 49, 50]
         emergencyRightToHospital = [52, 62, 48, 49, 50]
-
         self.emergencyVehicles = VehicleGenerator({
             'vehicles': [
-                (1, {'path': emergencyTopToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyLeftToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyBottomToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyRightToHospital, 'v_max': self.v + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyTopToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyLeftToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyBottomToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyRightToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
             ],
-            'vehicle_rate': 10
+            'vehicle_rate': emergencyVehicleRate
+        })
+
+        selfDrivingEmergencyVehicleRate = self.self_driving_vehicle_rate / 2
+        self.selfDrivingEmergencyVehicles = VehicleGenerator({
+            'vehicles': [
+                (1, {'path': emergencyTopToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyLeftToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyBottomToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyRightToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
+            ],
+            'vehicle_rate': selfDrivingEmergencyVehicleRate
         })
         # Pedestrians Green
         overpassRight = [65]
@@ -290,12 +360,12 @@ class Intersection:
         overpassBottom = [68]
         self.pedestrians = VehicleGenerator({
             'vehicles': [
-                (1, {'path': overpassRight, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
-                (1, {'path': overpassTop, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
-                (1, {'path': overpassLeft, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
-                (1, {'path': overpassBottom, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1}),
+                (1, {'path': overpassRight, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1, 's0': 0}),
+                (1, {'path': overpassTop, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1, 's0': 0}),
+                (1, {'path': overpassLeft, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1, 's0': 0}),
+                (1, {'path': overpassBottom, 'v_max': self.v - 5, 'colour': (0, 255, 0), 'l': 1, 'w': 1, 's0': 0}),
             ],
-            'vehicle_rate': 10
+            'vehicle_rate': self.pedestrian_rate
         })
         # Entrances 0-3, 24-27
         # Exits 4-7, 28-31
@@ -320,13 +390,6 @@ class Intersection:
         self.sim.define_interfearing_paths([26, 42], [42, 13], turn=True)
         self.sim.define_interfearing_paths([27, 43], [43, 14], turn=True)
         
-        # self.sim.define_interfearing_paths([24, 40], [39, 32], turn=True)
-        # self.sim.define_interfearing_paths([25, 41], [36, 33], turn=True)
-        # self.sim.define_interfearing_paths([26, 42], [37, 34], turn=True)
-        # self.sim.define_interfearing_paths([27, 43], [38, 35], turn=True)
-        # Right Lane Turn intos interfearing with connectors, turn into interfearing with corner
-        # self.sim.define_interfearing_paths([17, 9], [16, 8], turn=True)
-        # self.sim.define_interfearing_paths([16, 15], [15, 16], turn=True)
         # Left Turn intos interfearing with right lane connectors
         self.sim.define_interfearing_paths([40, 15], [41, 12], turn=True)
         self.sim.define_interfearing_paths([42, 13], [43, 14], turn=True)
@@ -335,6 +398,9 @@ class Intersection:
         self.sim.add_vehicle_generator(self.outerRingVehicles)
         self.sim.add_vehicle_generator(self.innerRingVehicles)
         self.sim.add_vehicle_generator(self.emergencyVehicles)
+        self.sim.add_vehicle_generator(self.selfDrivingOuterRingVehicles)
+        self.sim.add_vehicle_generator(self.selfDrivingInnerRingVehicles)
+        self.sim.add_vehicle_generator(self.selfDrivingEmergencyVehicles)
         self.sim.add_vehicle_generator(self.pedestrians)
 
     def get_sim(self):

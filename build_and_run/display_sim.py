@@ -3,7 +3,7 @@
 # from example_intersection import *
 # from roundabout import *
 # from my_intersection import *
-from test import *
+from team_simulation import *
 
 # Do 2 simulations one with self driving one without
 
