@@ -15,15 +15,12 @@ class Segment(ABC):
         self.width = 3.5
         self.has_traffic_signal = False
 
-        # Adding this to change color of segment (this is default)
+        # Adding this to change color of segment (this is default light grey)
         self.color = (180, 180, 220)
-
 
         self.set_functions()
         self.configure_configs(config)
         # for attr, val in config.items():
-            #AIDAN TEST
-            # print(attr, val)
             # setattr(self, attr, val)
     
 

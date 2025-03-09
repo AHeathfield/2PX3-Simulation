@@ -8,7 +8,7 @@ class Intersection:
         # ============================= Class Variables ==============================
         self.speed_variance = 2
         self.v = 8.5
-        self.self_driving_vehicle_proportion = 1 # IMPORTANT number between 0 and 1, 0 means no self driving vehicles, 1 means entirely self driving vehicles
+        self.self_driving_vehicle_proportion = 0 # IMPORTANT number between 0 and 1, 0 means no self driving vehicles, 1 means entirely self driving vehicles
         if self.self_driving_vehicle_proportion == 1:
             self.v = self.v * 1.5
         self.vehicle_rate = 30*(1-self.self_driving_vehicle_proportion)
@@ -188,19 +188,23 @@ class Intersection:
         cornerEndX = cornerStartY
         cornerEndY = cornerStartX
         self.sim.create_quadratic_bezier_curve((cornerStartX, cornerStartY), (newRadius, newRadius), (cornerEndX, cornerEndY), emergencyConfig)
+        # self.sim.create_quadratic_bezier_curve((cornerStartY, -cornerStartX), (newRadius, -newRadius), (cornerEndY, -cornerEndX), emergencyConfig)
         self.sim.create_quadratic_bezier_curve((-cornerStartX, -cornerStartY), (-newRadius, -newRadius), (-cornerEndX, -cornerEndY), emergencyConfig)
         self.sim.create_quadratic_bezier_curve((-cornerStartY, cornerStartX), (-newRadius, newRadius), (-cornerEndY, cornerEndX), emergencyConfig)
 
         # Emergency Outer Ring Connectors 58-60
         connectorStartX = cornerEndX
+        # connectorStartY = lane_space + island_width/2 + 1.2*offset
         connectorStartY = cornerStartX
         connectorEndX = connectorStartX
         connectorEndY = connectorStartY
         self.sim.create_segment((connectorStartX, connectorStartY), (connectorEndX, -connectorEndY), emergencyConfig)
+        # self.sim.create_segment((connectorStartY, -connectorStartX), (-connectorEndY, -connectorEndX), emergencyConfig)
         self.sim.create_segment((-connectorStartX, -connectorStartY), (-connectorEndX, connectorEndY), emergencyConfig)
         self.sim.create_segment((-connectorStartY, connectorStartX), (connectorEndY, connectorEndX), emergencyConfig)
 
         # Turn into emergency corners 61-64
+        # emergencyConfig = {'color': (255, 0, 0)}
         turnIntoRadius = 7.3 + offset
         newRadius = radius + 4.8*offset
         turnStartX = lane_space/2 + island_width/2 + 2*offset
@@ -222,6 +226,7 @@ class Intersection:
         turnIntoRadius = 7.3 + 8*3.5 + 5*offset
         turnStartX = rightEntranceEndX
         turnStartY = rightEntranceEndY
+        # turnStartY = intersection_size/1.5 + 15
         turnEndX = rightEntranceStartX + offset + 1
         turnEndY = radius + (intersection_size/1.5 - intersection_size/2) + 15 + 3
         newRadiusY = radius + (intersection_size/1.5 - intersection_size/2) + 15 + 3
@@ -275,22 +280,13 @@ class Intersection:
         # Regular vehicles BLUE
         self.outerRingVehicles = VehicleGenerator({
             'vehicles': [
-                # Bottom Right Lane -> Right Right Lane
                 (1, {'path': bottomToRight, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # (1, {'path': [0, 16], 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # Bottom Right Lane -> Top Right Lane
                 (1, {'path': bottomToTop, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # Right Right Lane -> Top Right Lane
                 (1, {'path': rightToTop, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # Right Right Lane -> Left Right Lane
                 (1, {'path': rightToLeft, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # Top Right Lane -> Left Right Lane
                 (1, {'path': topToLeft, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # Top Right Lane -> Bottom Right Lane
                 (1, {'path': topToBottom, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # Left Right Lane -> Bottom Right Lane
                 (1, {'path': leftToBottom, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
-                # Left Right Lane -> Right Right Lane
                 (1, {'path': leftToRight, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance}),
             ],
             'vehicle_rate': self.vehicle_rate
@@ -312,23 +308,14 @@ class Intersection:
         # Self Driving vehicles
         self.selfDrivingOuterRingVehicles = VehicleGenerator({
             'vehicles': [
-                # Bottom Right Lane -> Right Right Lane
-                (1, {'path': bottomToRight, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
-                # (1, {'path': [0, 16], 'v_max': self.v, 'T':0.1,'s0' : 4}),
-                # Bottom Right Lane -> Top Right Lane
-                (1, {'path': bottomToTop, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
-                # Right Right Lane -> Top Right Lane
-                (1, {'path': rightToTop, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
-                # Right Right Lane -> Left Right Lane
-                (1, {'path': rightToLeft, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
-                # Top Right Lane -> Left Right Lane
-                (1, {'path': topToLeft, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
-                # Top Right Lane -> Bottom Right Lane
-                (1, {'path': topToBottom, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
-                # Left Right Lane -> Bottom Right Lane
-                (1, {'path': leftToBottom, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
-                # Left Right Lane -> Right Right Lane
-                (1, {'path': leftToRight, 'v_max': self.v, 'T':0.1,'s0' : 4, 'colour': (114, 4, 204)}),
+                (1, {'path': bottomToRight, 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                (1, {'path': bottomToTop, 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                (1, {'path': rightToTop, 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                (1, {'path': rightToLeft, 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                (1, {'path': topToLeft, 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                (1, {'path': topToBottom, 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                (1, {'path': leftToBottom, 'v_max': self.v, 'T':0.1,'s0' : 4}),
+                (1, {'path': leftToRight, 'v_max': self.v, 'T':0.1,'s0' : 4}),
             ],
             'vehicle_rate': self.self_driving_vehicle_rate
         })
@@ -347,18 +334,18 @@ class Intersection:
         })
 
         # Emergency Vehicle RED
-        emergencyVehicleRate = self.vehicle_rate/2
 
         emergencyTopToHospital = [53, 63, 56, 59, 57, 60, 55, 58, 48, 49, 50]
         emergencyLeftToHospital = [54, 64, 57, 60, 55, 58, 48, 49, 50]
         emergencyBottomToHospital = [51, 61, 55, 58, 48, 49, 50]
         emergencyRightToHospital = [52, 62, 65, 66, 67]
+        emergencyVehicleRate = self.vehicle_rate/2
         self.emergencyVehicles = VehicleGenerator({
             'vehicles': [
-                (1, {'path': emergencyTopToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyLeftToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyBottomToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyRightToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyTopToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30}),
+                (1, {'path': emergencyLeftToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30}),
+                (1, {'path': emergencyBottomToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30}),
+                (1, {'path': emergencyRightToHospital, 'v_max': self.v+ 2*self.speed_variance*np.random.random() -self.speed_variance + 30}),
             ],
             'vehicle_rate': emergencyVehicleRate
         })
@@ -366,10 +353,10 @@ class Intersection:
         selfDrivingEmergencyVehicleRate = self.self_driving_vehicle_rate / 2
         self.selfDrivingEmergencyVehicles = VehicleGenerator({
             'vehicles': [
-                (1, {'path': emergencyTopToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyLeftToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyBottomToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
-                (1, {'path': emergencyRightToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4, 'colour': (255, 0, 0)}),
+                (1, {'path': emergencyTopToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4}),
+                (1, {'path': emergencyLeftToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4}),
+                (1, {'path': emergencyBottomToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4}),
+                (1, {'path': emergencyRightToHospital, 'v_max': self.v + 30, 'T':0.1,'s0' : 4}),
             ],
             'vehicle_rate': selfDrivingEmergencyVehicleRate
         })

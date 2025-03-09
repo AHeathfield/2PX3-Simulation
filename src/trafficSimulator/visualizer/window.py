@@ -272,9 +272,10 @@ class Window:
                 parent="OverlayCanvas"
             )
 
+    #AIDAN CHANGE
     def draw_segments(self):
         for segment in self.simulation.segments:
-            #AIDAN CHANGE commented out one is original
+            # Original is commented out
             dpg.draw_polyline(segment.points, color=segment.color,thickness=segment.width*self.zoom, parent="Canvas")
             # dpg.draw_polyline(segment.points, color=(180, 180, 220), thickness=segment.width*self.zoom, parent="Canvas")
 

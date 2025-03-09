@@ -46,8 +46,8 @@ class Simulation:
         veh = Vehicle(kwargs)
         self.add_vehicle(veh)
 
+    #AIDAN, fixed this so it will actually accept a config
     def create_segment(self, *args):
-        #AIDAN, fixed this so it will actually accept a config
         if len(args) == 3:
             points = ((args[0], args[1]))
             customConfig = args[2]
@@ -58,9 +58,10 @@ class Simulation:
         self.add_segment(seg)
 
     # IM going to try to add config so we can add colour
+    # Added parameter config
     def create_quadratic_bezier_curve(self, start, control, end, config={}):
         cur = QuadraticCurve(start, control, end)
-        cur.configure_configs(config)
+        cur.configure_configs(config) # Added this to apply configurations to the curve
         self.add_segment(cur)
 
     def create_cubic_bezier_curve(self, start, control_1, control_2, end):

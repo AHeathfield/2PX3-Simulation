@@ -1,5 +1,6 @@
 # from base_intersection import *
-from intersection import *
+# from intersection import *
+from team_simulation import *
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
